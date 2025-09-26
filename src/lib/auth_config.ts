@@ -1,4 +1,4 @@
-import { AUTH0_CLIENT_ID, AUTH0_DOMAIN } from "$env/static/private";
+import { AUTH0_DOMAIN, AUTH0_CLIENT_ID } from "$env/static/private";
 
 export const config = {
   domain: AUTH0_DOMAIN,
