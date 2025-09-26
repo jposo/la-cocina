@@ -61,12 +61,13 @@ https://your-domain.com/callback, https://your-domain.com
 
 2. Fill in your Auth0 credentials in the `.env` file:
    ```env
-   VITE_AUTH0_DOMAIN=your-domain.auth0.com
-   VITE_AUTH0_CLIENT_ID=your-client-id-from-auth0-dashboard
-   VITE_AUTH0_AUDIENCE=
+   PUBLIC_AUTH0_DOMAIN=your-domain.auth0.com
+   PUBLIC_AUTH0_CLIENT_ID=your-client-id-from-auth0-dashboard
+   PUBLIC_AUTH0_AUDIENCE=
    ```
 
-   > **Note**: The `VITE_AUTH0_AUDIENCE` is optional unless you have an Auth0 API set up.
+   > **Note**: The `PUBLIC_AUTH0_AUDIENCE` is optional unless you have an Auth0 API set up.
+   > **Important**: Use `PUBLIC_` prefix for client-side variables in SvelteKit!
 
 ## Step 4: Test the Authentication
 
@@ -90,7 +91,7 @@ If you plan to make authenticated API calls to a backend:
 1. In your Auth0 Dashboard, go to **APIs**
 2. Click **Create API**
 3. Give it a name and identifier (e.g., `https://la-mexicocina-api`)
-4. Add the API identifier to your `.env` file as `VITE_AUTH0_AUDIENCE`
+4. Add the API identifier to your `.env` file as `PUBLIC_AUTH0_AUDIENCE`
 
 ## Features Included
 
@@ -170,7 +171,7 @@ async function makeAPICall() {
 
 2. **CORS errors**: Ensure your domain is added to "Allowed Origins (CORS)" in your Auth0 application settings
 
-3. **Environment variables not loading**: Make sure your `.env` file is in the root directory and variables start with `VITE_`
+3. **Environment variables not loading**: Make sure your `.env` file is in the root directory and client-side variables start with `PUBLIC_`
 
 4. **Redirect loop**: Check that your callback route is properly configured and not causing infinite redirects
 
@@ -178,12 +179,12 @@ async function makeAPICall() {
 
 You can enable debug logging by adding this to your `.env` file:
 ```env
-VITE_DEBUG=true
+PUBLIC_DEBUG=true
 ```
 
 ## Security Best Practices
 
-1. **Never expose sensitive data**: Auth0 client credentials for SPAs are public, but never expose API secrets
+1. **Never expose sensitive data**: Auth0 client credentials for SPAs are public (hence `PUBLIC_` prefix), but never expose API secrets or client secrets
 2. **Use HTTPS in production**: Always use HTTPS for production applications
 3. **Validate tokens on the backend**: If you have an API, always validate tokens server-side
 4. **Keep dependencies updated**: Regularly update Auth0 SDK and other security-related packages
@@ -193,9 +194,15 @@ VITE_DEBUG=true
 When deploying to production:
 
 1. Update your Auth0 application settings with your production URLs
-2. Set your environment variables in your hosting platform
+2. Set your environment variables in your hosting platform (remember to use `PUBLIC_` prefix for client-side vars)
 3. Ensure your build process includes the environment variables
 4. Test the authentication flow in your production environment
+
+### Netlify Environment Variables
+In your Netlify dashboard, add these environment variables:
+- `PUBLIC_AUTH0_DOMAIN`
+- `PUBLIC_AUTH0_CLIENT_ID` 
+- `PUBLIC_AUTH0_AUDIENCE` (if using APIs)
 
 ## Support
 
