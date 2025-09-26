@@ -1,4 +1,5 @@
 import { neon } from "@netlify/neon";
+import { NETLIFY_DATABASE_URL } from "$env/static/private";
 
 export const fetchFoods = async () => {
   const sql = neon(import.meta.env.VITE_NETLIFY_DATABASE_URL);
