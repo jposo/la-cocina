@@ -1,0 +1,33 @@
+import { neon } from "@netlify/neon";
+
+export const fetchFoods = async () => {
+  const sql = neon(import.meta.env.VITE_NETLIFY_DATABASE_URL);
+  const foods = await sql`SELECT * FROM foods`;
+  return foods as {
+    id: string;
+    title: string;
+    difficulty: string;
+    image: string;
+  }[];
+};
+
+export const fetchFoodRecipe = async (id: string) => {
+  const sql = neon(import.meta.env.VITE_NETLIFY_DATABASE_URL);
+  const [recipe] = await sql`
+    SELECT foods.*, recipes.portion, recipes.time, recipes.description, recipes.ingredients, recipes.method
+    FROM recipes
+    JOIN foods ON foods.id = recipes.food_id
+    WHERE recipes.id = ${id}
+  `;
+  return recipe as {
+    id: string;
+    title: string;
+    difficulty: string;
+    portion: string;
+    time: string;
+    description: string;
+    ingredients: string[];
+    method: Record<string, string>[];
+    image: string;
+  }[];
+};

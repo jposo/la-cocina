@@ -1,6 +1,8 @@
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
+import { fetchFoods } from "$lib/server/database";
 
 export const GET: RequestHandler = async (event) => {
-  return json([{ id: "1", title: "Recipe 1", description: "Description 1" }]);
+  const foods = await fetchFoods();
+  return json(foods);
 };
