@@ -1,8 +1,6 @@
-import { AUTH0_DOMAIN, AUTH0_CLIENT_ID } from "$env/static/private";
-
 export const config = {
-  domain: AUTH0_DOMAIN,
-  clientId: AUTH0_CLIENT_ID,
+  domain: "dev-uyn6xmq8qejklrwh.us.auth0.com",
+  clientId: "tz02iEcTKBRdJEw1jN2pThRf6AvHbHL6",
   audience: undefined,
   redirectUri:
     typeof window !== "undefined" ? window.location.origin + "/callback" : "",
