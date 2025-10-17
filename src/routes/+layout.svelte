@@ -40,6 +40,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
+  <title>La Mexicocina</title>
 </svelte:head>
 
 <div class="navbar bg-base-300 shadow-sm fixed top-0 z-10">

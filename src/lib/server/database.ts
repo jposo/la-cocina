@@ -1,26 +1,37 @@
 import { neon } from "@netlify/neon";
-import { NETLIFY_DATABASE_URL } from "$env/static/private";
+import { RAPIDAPI_KEY, NETLIFY_DATABASE_URL } from "$env/static/private";
 
 export const fetchFoods = async () => {
-  const sql = neon(NETLIFY_DATABASE_URL);
-  const foods = await sql`SELECT * FROM foods`;
-  return foods as {
+  const response = await fetch(
+    `https://the-mexican-food-db.p.rapidapi.com/`,
+    {
+      headers: {
+        "X-rapidapi-key": RAPIDAPI_KEY,
+        "X-rapidapi-host": "the-mexican-food-db.p.rapidapi.com",
+      },
+    },
+  );
+  const data = await response.json();
+  return data as {
     id: string;
     title: string;
     difficulty: string;
     image: string;
   }[];
-};
+}
 
 export const fetchFoodRecipe = async (id: string) => {
-  const sql = neon(NETLIFY_DATABASE_URL);
-  const [recipe] = await sql`
-    SELECT foods.*, recipes.portion, recipes.time, recipes.description, recipes.ingredients, recipes.method
-    FROM recipes
-    JOIN foods ON foods.id = recipes.food_id
-    WHERE recipes.id = ${id}
-  `;
-  return recipe as {
+  const response = await fetch(
+    `https://the-mexican-food-db.p.rapidapi.com/${id}`,
+    {
+      headers: {
+        "X-rapidapi-key": RAPIDAPI_KEY,
+        "X-rapidapi-host": "the-mexican-food-db.p.rapidapi.com",
+      },
+    },
+  );
+  const data = await response.json();
+  return data as {
     id: string;
     title: string;
     difficulty: string;
@@ -30,5 +41,11 @@ export const fetchFoodRecipe = async (id: string) => {
     ingredients: string[];
     method: Record<string, string>[];
     image: string;
-  }[];
+  };
 };
+
+export const getLikedFoods = async (userId: string) => {
+  const sql = neon(NETLIFY_DATABASE_URL);
+  const likes = await sql``;
+  return likes as { food_id: string }[];
+}
