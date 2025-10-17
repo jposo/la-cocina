@@ -49,6 +49,17 @@ export async function loginWithPopup(options = {}) {
 
     user.set(userProfile || {});
     isAuthenticated.set(authenticated);
+
+    if (authenticated) {
+      const token = await client.getTokenSilently();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+    }
   } catch (e) {
     console.error("Login failed:", e);
     error.set(e instanceof Error ? e.message : "Login failed");
@@ -87,6 +98,17 @@ export async function handleRedirectCallback() {
 
     user.set(userProfile || {});
     isAuthenticated.set(authenticated);
+
+    if (authenticated) {
+      const token = await client.getTokenSilently();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+    }
   } catch (e) {
     console.error("Callback handling failed:", e);
     error.set(e instanceof Error ? e.message : "Authentication failed");
@@ -106,6 +128,9 @@ export async function logout(returnTo?: string) {
     // Clear local state first
     user.set({});
     isAuthenticated.set(false);
+
+    // Clear the session cookie
+    await fetch("/api/auth/session", { method: "DELETE" });
 
     // Determine the return URL
     const logoutUrl = returnTo || config.logoutUri || window.location.origin;
@@ -143,6 +168,9 @@ export async function logoutLocal() {
     // Clear local state
     user.set({});
     isAuthenticated.set(false);
+
+    // Clear the session cookie
+    await fetch("/api/auth/session", { method: "DELETE" });
 
     // Clear any Auth0 session data from localStorage/sessionStorage
     localStorage.removeItem("auth0.session");
@@ -197,6 +225,15 @@ export async function initializeAuth() {
       const userProfile = await client.getUser();
       user.set(userProfile || {});
       isAuthenticated.set(true);
+
+      const token = await client.getTokenSilently();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
     }
   } catch (e) {
     console.error("Auth initialization failed:", e);

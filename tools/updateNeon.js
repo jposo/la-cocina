@@ -1,29 +1,11 @@
 import { neon } from "@netlify/neon";
 
-const sql = neon(process.env.VITE_NEON_DATABASE_URL);
-
-const response = await fetch("https://the-mexican-food-db.p.rapidapi.com", {
-  headers: {
-    "X-rapidapi-key": process.env.RAPIDAPI_KEY,
-    "X-rapidapi-host": "the-mexican-food-db.p.rapidapi.com",
-  },
-});
-
-const data = await response.json();
+const sql = neon();
 
 await sql`
- CREATE TABLE IF NOT EXISTS foods (
-   id TEXT PRIMARY KEY,
-   title TEXT NOT NULL,
-   difficulty TEXT NOT NULL,
-   image TEXT NOT NULL
+ CREATE TABLE IF NOT EXISTS user_likes (
+   user_id TEXT NOT NULL,
+   food_id TEXT NOT NULL,
+   PRIMARY KEY (user_id, food_id)
  );
 `;
-
-for (const food of data) {
-  await sql`
-    INSERT INTO foods (id, title, difficulty, image)
-    VALUES (${food.id}, ${food.title}, ${food.difficulty}, ${food.image})
-    ON CONFLICT (id) DO NOTHING;
-  `;
-}
