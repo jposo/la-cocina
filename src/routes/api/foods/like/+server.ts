@@ -65,6 +65,11 @@ export const POST: RequestHandler = async (event) => {
     const userId = formData.get("userId");
     const action = formData.get("action");
 
+    console.log("GOT THIS");
+    console.log("foodId:", foodId);
+    console.log("userId:", userId);
+    console.log("action:", action);
+
     if (
         !foodId ||
         !userId ||
