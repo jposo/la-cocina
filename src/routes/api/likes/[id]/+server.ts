@@ -8,5 +8,11 @@ export const GET: RequestHandler = async (event) => {
         error(404, { message: "Provide a valid User ID" });
     }
     const likes = await getLikedFoods(id);
-    return json(likes);
+    return json(likes, {
+        headers: {
+            "Access-Control-Allow-Origin": "*", // Allows requests from any domain
+            "Access-Control-Allow-Methods": "GET", // Only necessary if you also have POST/PUT/DELETE
+            "Access-Control-Allow-Headers": "Content-Type",
+        },
+    });
 };
