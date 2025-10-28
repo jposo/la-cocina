@@ -15,16 +15,10 @@
 
     $effect(() => {
         const fetchLikes = async () => {
-            console.log($user, $isAuthenticated);
-            if ($isAuthenticated && $user?.id) {
+            if ($isAuthenticated && $user?.sub) {
                 const token = await getAccessToken();
                 const likesResponse = await fetch(
-                    `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    },
+                    `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.sub}`,
                 );
                 likes = await likesResponse.json();
             } else {
@@ -45,12 +39,11 @@
         likes[id] = !likes[id];
 
         await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/food/like`,
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like/${$user.sub}`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ foodId: id, action: currentAction }),
             },
