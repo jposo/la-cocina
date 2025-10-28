@@ -1,98 +1,101 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
-  import { isAuthenticated } from "$lib/auth";
+    import type { PageData } from "./$types";
+    import { isAuthenticated, user } from "$lib/auth";
 
-  let { data }: { data: PageData } = $props();
+    let { data }: { data: PageData } = $props();
 
-  let liked = $state(data.likes[data.id]);
+    let liked = $state(data.likes[data.id]);
 
-  function handleLike(id: string) {
-    if (!$isAuthenticated) {
-      alert("Please log in to like this food");
-      return;
+    function handleLike(id: string) {
+        if (!$isAuthenticated) {
+            alert("Please log in to like this food");
+            return;
+        }
+        liked = !liked;
+        const formData = new FormData();
+        formData.append("foodId", id);
+        formData.append("userId", $user.sub);
+        if (liked) {
+            formData.append("action", "like");
+        } else {
+            formData.append("action", "unlike");
+        }
+        fetch("/api/foods/like", {
+            method: "POST",
+            body: formData,
+        });
     }
-    liked = !liked;
-    const formData = new FormData();
-    formData.append("foodId", id);
-    if (liked) {
-      formData.append("action", "like");
-    } else {
-      formData.append("action", "unlike");
-    }
-    fetch("?/like", {
-      method: "POST",
-      body: formData,
-    });
-  }
 </script>
 
 <svelte:head>
-  <title>{data.recipe.title}</title>
+    <title>{data.recipe.title}</title>
 </svelte:head>
 
 <div
-  class="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-6 space-y-6"
+    class="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-6 space-y-6"
 >
-  <!-- Title -->
-  <h1 class="text-3xl font-bold text-center">{data.recipe.title}</h1>
-  <button
-    class="btn {liked ? 'btn-secondary' : ''}"
-    onclick={() => handleLike(data.recipe.id)}
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill={liked ? "white" : ""}
-      viewBox="0 0 24 24"
-      stroke-width="2.5"
-      stroke="currentColor"
-      class="size-[1.2em]"
-      ><path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-      /></svg
+    <!-- Title -->
+    <h1 class="text-3xl font-bold text-center">{data.recipe.title}</h1>
+    <button
+        class="btn {liked ? 'btn-secondary' : ''}"
+        onclick={() => handleLike(data.recipe.id)}
     >
-    {liked ? "Unlike" : "Like"}
-  </button>
-  <!-- Badges -->
-  <div class="flex gap-2 flex-wrap justify-center">
-    <div class="badge badge-primary">{data.recipe.difficulty}</div>
-    {#if data.recipe.portion}
-      <div class="badge badge-secondary">{data.recipe.portion}</div>
-    {/if}
-    <div class="badge badge-accent">{data.recipe.time}</div>
-  </div>
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill={liked ? "white" : ""}
+            viewBox="0 0 24 24"
+            stroke-width="2.5"
+            stroke="currentColor"
+            class="size-[1.2em]"
+            ><path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+            /></svg
+        >
+        {liked ? "Unlike" : "Like"}
+    </button>
+    <!-- Badges -->
+    <div class="flex gap-2 flex-wrap justify-center">
+        <div class="badge badge-primary">{data.recipe.difficulty}</div>
+        {#if data.recipe.portion}
+            <div class="badge badge-secondary">{data.recipe.portion}</div>
+        {/if}
+        <div class="badge badge-accent">{data.recipe.time}</div>
+    </div>
 
-  <!-- Description -->
-  <p class="text-center text-base leading-relaxed">{data.recipe.description}</p>
+    <!-- Description -->
+    <p class="text-center text-base leading-relaxed">
+        {data.recipe.description}
+    </p>
 
-  <img
-    src={data.recipe.image}
-    alt={data.recipe.title}
-    class="w-full max-w-md mx-auto"
-  />
+    <img
+        src={data.recipe.image}
+        alt={data.recipe.title}
+        class="w-full max-w-md mx-auto"
+    />
 
-  <!-- Ingredients -->
-  <div class="w-full bg-base-200 rounded-box p-4">
-    <h2 class="text-2xl font-semibold mb-2">Ingredients</h2>
-    <ul class="list-disc list-inside space-y-1">
-      {#each data.recipe.ingredients as ingredient}
-        <li>{ingredient}</li>
-      {/each}
-    </ul>
-  </div>
+    <!-- Ingredients -->
+    <div class="w-full bg-base-200 rounded-box p-4">
+        <h2 class="text-2xl font-semibold mb-2">Ingredients</h2>
+        <ul class="list-disc list-inside space-y-1">
+            {#each data.recipe.ingredients as ingredient}
+                <li>{ingredient}</li>
+            {/each}
+        </ul>
+    </div>
 
-  <!-- Steps -->
-  <div class="w-full bg-base-200 rounded-box p-4">
-    <h2 class="text-2xl font-semibold mb-2">Steps</h2>
-    <ol class="list-decimal list-inside space-y-3">
-      {#each data.recipe.method as step}
-        {#each Object.entries(step) as [key, value]}
-          <li>
-            {value}
-          </li>
-        {/each}
-      {/each}
-    </ol>
-  </div>
+    <!-- Steps -->
+    <div class="w-full bg-base-200 rounded-box p-4">
+        <h2 class="text-2xl font-semibold mb-2">Steps</h2>
+        <ol class="list-decimal list-inside space-y-3">
+            {#each data.recipe.method as step}
+                {#each Object.entries(step) as [key, value]}
+                    <li>
+                        {value}
+                    </li>
+                {/each}
+            {/each}
+        </ol>
+    </div>
 </div>
