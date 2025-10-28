@@ -43,8 +43,22 @@ export const GET: RequestHandler = async ({ request }) => {
 };
 
 export const POST: RequestHandler = async (event) => {
-    if (!user) {
-        return error(401, "You must be logged in to like a food.");
+    const cookies = event.request.headers.get("cookie");
+    const token = getCookie("access_token", cookies);
+
+    if (!token) {
+        return new Response(
+            JSON.stringify({
+                message: "You must be logged in to like a food.",
+            }),
+            {
+                status: 401,
+                headers: {
+                    ...corsHeaders,
+                    "Content-Type": "application/json",
+                },
+            },
+        );
     }
 
     const formData = await event.request.formData();
@@ -58,7 +72,13 @@ export const POST: RequestHandler = async (event) => {
         typeof foodId !== "string" ||
         typeof userId !== "string"
     ) {
-        return error(400, "Invalid request");
+        return new Response(JSON.stringify({ message: "Invalid request" }), {
+            status: 400,
+            headers: {
+                ...corsHeaders,
+                "Content-Type": "application/json",
+            },
+        });
     }
 
     try {
@@ -81,6 +101,15 @@ export const POST: RequestHandler = async (event) => {
             method: "POST", // PUT works too
             body: `Error: ${err}`,
         });
-        return error(500, "Failed to like food");
+        return new Response(
+            JSON.stringify({ message: "Failed to like food" }),
+            {
+                status: 500,
+                headers: {
+                    ...corsHeaders,
+                    "Content-Type": "application/json",
+                },
+            },
+        );
     }
 };
