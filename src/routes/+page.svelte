@@ -36,20 +36,25 @@
         const currentAction = likes[id] ? "unlike" : "like";
         likes[id] = !likes[id];
 
-        await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
+        try {
+            await fetch(
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        foodId: id,
+                        userId: $user.sub,
+                        action: currentAction,
+                    }),
                 },
-                body: JSON.stringify({
-                    foodId: id,
-                    userId: $user.sub,
-                    action: currentAction,
-                }),
-            },
-        );
+            );
+        } catch (error) {
+            console.error(error);
+            alert(`Failed to like/unlike food: ${error}`);
+        }
     }
 </script>
 
