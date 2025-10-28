@@ -9,11 +9,6 @@
     onMount(async () => {
         const response = await fetch(
             "https://aesthetic-sunflower-97a6e4.netlify.app/api/foods",
-            {
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                },
-            },
         );
         foods = await response.json();
 
@@ -23,7 +18,6 @@
                 `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.id}`,
                 {
                     headers: {
-                        "Access-Control-Allow-Origin": "*",
                         Authorization: `Bearer ${token}`,
                     },
                 },
