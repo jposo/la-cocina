@@ -3,21 +3,27 @@
     import { goto } from "$app/navigation";
     import { isAuthenticated, user, getAccessToken } from "$lib/auth";
 
-    let foods = $state([]);
-    let likes = $state({});
+    let foods = $state<Record<string, string>[]>([]);
+    let likes = $state<Record<string, boolean>>({});
 
     onMount(async () => {
         const response = await fetch(
             "https://aesthetic-sunflower-97a6e4.netlify.app/api/foods",
+            {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+            },
         );
         foods = await response.json();
 
         if ($isAuthenticated) {
             const token = await getAccessToken();
             const likesResponse = await fetch(
-                "https://aesthetic-sunflower-97a6e4.netlify.app/api/likes",
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.id}`,
                 {
                     headers: {
+                        "Access-Control-Allow-Origin": "*",
                         Authorization: `Bearer ${token}`,
                     },
                 },

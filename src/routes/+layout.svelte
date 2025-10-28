@@ -13,7 +13,7 @@
         error,
     } from "$lib/auth";
 
-    export const prerender = true;
+    // export const prerender = true;
 
     let { children } = $props();
 
