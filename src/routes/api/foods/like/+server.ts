@@ -1,117 +1,89 @@
 import type { RequestHandler } from "@sveltejs/kit";
-import { json, error } from "@sveltejs/kit";
+import { json } from "@sveltejs/kit";
 import { likeFood, unlikeFood } from "$lib/server/database";
-import { user } from "$lib/auth";
-
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-};
-
-// function getCookie(name: string, cookies: string | null) {
-//     if (!cookies) return null;
-//     const match = cookies.match(new RegExp("(^| )" + name + "=([^;]+)"));
-//     return match ? match[2] : null;
-// }
 
 export const OPTIONS: RequestHandler = async () => {
     return new Response(null, {
         status: 204,
-        headers: corsHeaders,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*", // allow JSON, formdata, etc
+        },
     });
 };
 
-// 2. GET Handler (Fixes 405 when checking session status)
-export const GET: RequestHandler = async ({ request }) => {
-    // const cookies = request.headers.get("cookie");
-    // const token = getCookie("access_token", cookies);
-
-    // You should add token validation logic here (e.g., check expiry/database)
-    // const isAuthenticated = !!token;
-
-    return json(
-        // { isAuthenticated: isAuthenticated },
-        {
-            headers: {
-                ...corsHeaders,
-                "Content-Type": "application/json",
-            },
-        },
-    );
-};
-
 export const POST: RequestHandler = async (event) => {
-    // const cookies = event.request.headers.get("cookie");
-    // const token = getCookie("access_token", cookies);
+    // --- Step 1: Read raw body safely, even when Netlify pre-parsed it
+    let bodyText = "";
+    try {
+        bodyText = await event.request.text();
+    } catch {
+        return json({ message: "No request body" }, { status: 400 });
+    }
 
-    // if (!token) {
-    //     return new Response(
-    //         JSON.stringify({
-    //             message: "You must be logged in to like a food.",
-    //         }),
-    //         {
-    //             status: 401,
-    //             headers: {
-    //                 ...corsHeaders,
-    //                 "Content-Type": "application/json",
-    //             },
-    //         },
-    //     );
-    // }
+    // --- Step 2: Try to parse as JSON, fallback to FormData
+    let foodId: string | null = null;
+    let userId: string | null = null;
+    let action: string | null = null;
 
-    const formData = await event.request.formData();
-    const foodId = formData.get("foodId");
-    const userId = formData.get("userId");
-    const action = formData.get("action");
+    try {
+        const parsed = JSON.parse(bodyText);
+        foodId = parsed.foodId;
+        userId = parsed.userId;
+        action = parsed.action;
+    } catch {
+        try {
+            const form = await event.request.formData();
+            foodId = form.get("foodId") as string;
+            userId = form.get("userId") as string;
+            action = form.get("action") as string;
+        } catch {
+            // ignore
+        }
+    }
 
-    console.log("GOT THIS");
-    console.log("foodId:", foodId);
-    console.log("userId:", userId);
-    console.log("action:", action);
-
-    if (
-        !foodId ||
-        !userId ||
-        typeof foodId !== "string" ||
-        typeof userId !== "string"
-    ) {
-        return new Response(JSON.stringify({ message: "Invalid request" }), {
-            status: 400,
-            headers: {
-                ...corsHeaders,
-                "Content-Type": "application/json",
+    if (!foodId || !userId) {
+        return json(
+            { message: "Invalid request" },
+            {
+                status: 400,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods":
+                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                },
             },
-        });
+        );
     }
 
     try {
-        if (action === "like") {
-            await likeFood(userId, foodId);
-        } else if (action === "unlike") {
-            await unlikeFood(userId, foodId);
-        }
+        if (action === "like") await likeFood(userId, foodId);
+        else if (action === "unlike") await unlikeFood(userId, foodId);
+
         return json(
             { success: true },
             {
                 headers: {
-                    ...corsHeaders,
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods":
+                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
                 },
             },
         );
     } catch (err) {
         console.error(err);
-        fetch("https://ntfy.sh/mexicocina", {
-            method: "POST", // PUT works too
-            body: `Error: ${err}`,
-        });
-        return new Response(
-            JSON.stringify({ message: "Failed to like food" }),
+        return json(
+            { message: "Failed to like food" },
             {
                 status: 500,
                 headers: {
-                    ...corsHeaders,
-                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods":
+                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
                 },
             },
         );
