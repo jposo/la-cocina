@@ -30,52 +30,29 @@
         fetchLikes();
     });
 
-    onMount(async () => {
-        const id = page.params.id;
-        if (!id) return;
-        const response = await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/${id}`,
-        );
-        recipe = await response.json();
-
-        if ($isAuthenticated) {
-            const token = await getAccessToken();
-            const likesResponse = await fetch(
-                "https://aesthetic-sunflower-97a6e4.netlify.app/api/likes",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            const likes = await likesResponse.json();
-            liked = likes[id];
-        }
-    });
-
     async function handleLike(id: string) {
         if (!$isAuthenticated) {
             alert("Please log in to like this food");
             return;
         }
 
-        const currentAction = liked ? "unlike" : "like";
-        liked = !liked;
+        const form = new FormData();
+        form.append("foodId", id);
+        form.append("userId", $user.sub);
+        form.append("action", liked ? "unlike" : "like");
 
-        await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
+        try {
+            await fetch(
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
+                {
+                    method: "POST",
+                    body: form,
                 },
-                body: JSON.stringify({
-                    foodId: id,
-                    userId: $user.sub,
-                    action: currentAction,
-                }),
-            },
-        );
+            );
+        } catch (error) {
+            console.error(error);
+            alert(`Failed to like/unlike food: ${error}`);
+        }
     }
 </script>
 
