@@ -7,7 +7,6 @@ const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Credentials": "true", // Needed when using HttpOnly cookies
 };
 
 // function getCookie(name: string, cookies: string | null) {
