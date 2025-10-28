@@ -10,11 +10,11 @@ const corsHeaders = {
     "Access-Control-Allow-Credentials": "true", // Needed when using HttpOnly cookies
 };
 
-function getCookie(name: string, cookies: string | null) {
-    if (!cookies) return null;
-    const match = cookies.match(new RegExp("(^| )" + name + "=([^;]+)"));
-    return match ? match[2] : null;
-}
+// function getCookie(name: string, cookies: string | null) {
+//     if (!cookies) return null;
+//     const match = cookies.match(new RegExp("(^| )" + name + "=([^;]+)"));
+//     return match ? match[2] : null;
+// }
 
 export const OPTIONS: RequestHandler = async () => {
     return new Response(null, {
@@ -25,14 +25,14 @@ export const OPTIONS: RequestHandler = async () => {
 
 // 2. GET Handler (Fixes 405 when checking session status)
 export const GET: RequestHandler = async ({ request }) => {
-    const cookies = request.headers.get("cookie");
-    const token = getCookie("access_token", cookies);
+    // const cookies = request.headers.get("cookie");
+    // const token = getCookie("access_token", cookies);
 
     // You should add token validation logic here (e.g., check expiry/database)
-    const isAuthenticated = !!token;
+    // const isAuthenticated = !!token;
 
     return json(
-        { isAuthenticated: isAuthenticated },
+        // { isAuthenticated: isAuthenticated },
         {
             headers: {
                 ...corsHeaders,
@@ -43,23 +43,23 @@ export const GET: RequestHandler = async ({ request }) => {
 };
 
 export const POST: RequestHandler = async (event) => {
-    const cookies = event.request.headers.get("cookie");
-    const token = getCookie("access_token", cookies);
+    // const cookies = event.request.headers.get("cookie");
+    // const token = getCookie("access_token", cookies);
 
-    if (!token) {
-        return new Response(
-            JSON.stringify({
-                message: "You must be logged in to like a food.",
-            }),
-            {
-                status: 401,
-                headers: {
-                    ...corsHeaders,
-                    "Content-Type": "application/json",
-                },
-            },
-        );
-    }
+    // if (!token) {
+    //     return new Response(
+    //         JSON.stringify({
+    //             message: "You must be logged in to like a food.",
+    //         }),
+    //         {
+    //             status: 401,
+    //             headers: {
+    //                 ...corsHeaders,
+    //                 "Content-Type": "application/json",
+    //             },
+    //         },
+    //     );
+    // }
 
     const formData = await event.request.formData();
     const foodId = formData.get("foodId");
