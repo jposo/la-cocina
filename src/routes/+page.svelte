@@ -45,14 +45,14 @@
         likes[id] = !likes[id];
 
         await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/${currentAction}`,
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/food/like`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ foodId: id }),
+                body: JSON.stringify({ foodId: id, action: currentAction }),
             },
         );
     }
