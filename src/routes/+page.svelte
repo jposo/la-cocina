@@ -11,19 +11,27 @@
             "https://aesthetic-sunflower-97a6e4.netlify.app/api/foods",
         );
         foods = await response.json();
+    });
 
-        if ($isAuthenticated) {
-            const token = await getAccessToken();
-            const likesResponse = await fetch(
-                `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
+    $effect(() => {
+        const fetchLikes = async () => {
+            console.log($user, $isAuthenticated);
+            if ($isAuthenticated && $user?.id) {
+                const token = await getAccessToken();
+                const likesResponse = await fetch(
+                    `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
                     },
-                },
-            );
-            likes = await likesResponse.json();
-        }
+                );
+                likes = await likesResponse.json();
+            } else {
+                likes = {};
+            }
+        };
+        fetchLikes();
     });
 
     async function handleLike(id: string) {
