@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@sveltejs/kit";
 import { error, json } from "@sveltejs/kit";
-import { fetchFoodRecipe, fetchFoods } from "$lib/server/database";
+import { fetchFoodRecipe } from "$lib/server/database";
 
 export const GET: RequestHandler = async (event) => {
     const id = event.params.id;
