@@ -3,6 +3,7 @@ import { writable, type Writable } from "svelte/store";
 import { browser } from "$app/environment";
 import config from "./auth_config";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
 // Stores
 export const isLoading: Writable<boolean> = writable(false);
@@ -36,19 +37,41 @@ export async function createClient(): Promise<Auth0Client> {
     return auth0Client;
 }
 
-// Handle app URL open for mobile
+// Handle app URL open for mobile (Auth0 redirect)
 export const handleAppUrlOpen = async () => {
-    if (Capacitor.isNativePlatform()) {
-        const { App } = await import("@capacitor/app");
-        App.addListener("appUrlOpen", async (data) => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const { App } = await import("@capacitor/app");
+    const { Browser } = await import("@capacitor/browser");
+
+    App.addListener("appUrlOpen", async (event) => {
+        try {
+            const url = event?.url;
+            if (!url) return;
+
             if (
-                data.url.includes("state=") &&
-                (data.url.includes("code=") || data.url.includes("error="))
+                url.includes("state=") &&
+                (url.includes("code=") || url.includes("error="))
             ) {
-                await handleRedirectCallback(data.url);
+                if (url.includes("callback")) {
+                    // Handle redirect and update stores
+                    await handleRedirectCallback(url);
+
+                    // Clean up browser history
+                    window.history.replaceState(
+                        {},
+                        document.title,
+                        window.location.pathname,
+                    );
+                }
             }
-        });
-    }
+
+            // Close the system browser (so user returns to app view)
+            await Browser.close();
+        } catch (err) {
+            console.error("[Auth0] Error handling deep link:", err);
+        }
+    });
 };
 
 // Login with popup (for web)
@@ -105,17 +128,23 @@ export async function loginWithRedirect(options = {}) {
 
 // Handle redirect callback
 export async function handleRedirectCallback(url?: string) {
-    if (!browser) return;
+    // alert(`handleRedirectCallback: ${url} `);
+    // if (!browser) return;
 
     try {
         isLoading.set(true);
         error.set(null);
 
+        // alert(`creating client`);
         const client = await createClient();
+        // alert(`handling redirect callback`);
         await client.handleRedirectCallback(url);
 
+        // alert(`getting user`);
         const userProfile = await client.getUser();
+        // alert(`userProfile: ${userProfile}`);
         const authenticated = await client.isAuthenticated();
+        // alert(`authenticated: ${authenticated}`);
 
         user.set(userProfile || {});
         isAuthenticated.set(authenticated);
@@ -134,6 +163,7 @@ export async function handleRedirectCallback(url?: string) {
             );
         }
     } catch (e) {
+        alert(`Error: ${e}`);
         console.error("Callback handling failed:", e);
         error.set(e instanceof Error ? e.message : "Authentication failed");
     } finally {

@@ -6,8 +6,7 @@ const config: CapacitorConfig = {
     webDir: "build",
     bundledWebRuntime: false,
     server: {
-        hostname: "auth-callback",
-        androidScheme: "https",
+        hostname: "localhost",
     },
 };
 

@@ -44,7 +44,7 @@
     <title>La Mexicocina</title>
 </svelte:head>
 
-<div class="navbar bg-base-300 shadow-sm fixed top-0 z-10">
+<div class="navbar bg-base-300 shadow-sm fixed top-0 z-10 pt-10">
     <div class="flex-1">
         <a href="/" class="btn btn-ghost text-xl">La Mexicocina</a>
     </div>
