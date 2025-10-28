@@ -8,40 +8,16 @@ export const OPTIONS: RequestHandler = async () => {
         headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*", // allow JSON, formdata, etc
+            "Access-Control-Allow-Headers": "*",
         },
     });
 };
 
-export const POST: RequestHandler = async (event) => {
-    // --- Step 1: Read raw body safely, even when Netlify pre-parsed it
-    let bodyText = "";
-    try {
-        bodyText = await event.request.text();
-    } catch {
-        return json({ message: "No request body" }, { status: 400 });
-    }
-
-    // --- Step 2: Try to parse as JSON, fallback to FormData
-    let foodId: string | null = null;
-    let userId: string | null = null;
-    let action: string | null = null;
-
-    try {
-        const parsed = JSON.parse(bodyText);
-        foodId = parsed.foodId;
-        userId = parsed.userId;
-        action = parsed.action;
-    } catch {
-        try {
-            const form = await event.request.formData();
-            foodId = form.get("foodId") as string;
-            userId = form.get("userId") as string;
-            action = form.get("action") as string;
-        } catch {
-            // ignore
-        }
-    }
+export const GET: RequestHandler = async (event) => {
+    const url = new URL(event.request.url);
+    const foodId = url.searchParams.get("foodId");
+    const userId = url.searchParams.get("userId");
+    const action = url.searchParams.get("action");
 
     if (!foodId || !userId) {
         return json(
@@ -50,8 +26,7 @@ export const POST: RequestHandler = async (event) => {
                 status: 400,
                 headers: {
                     "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods":
-                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
                     "Access-Control-Allow-Headers": "*",
                 },
             },
@@ -67,8 +42,7 @@ export const POST: RequestHandler = async (event) => {
             {
                 headers: {
                     "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods":
-                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
                     "Access-Control-Allow-Headers": "*",
                 },
             },
@@ -76,13 +50,12 @@ export const POST: RequestHandler = async (event) => {
     } catch (err) {
         console.error(err);
         return json(
-            { message: "Failed to like food" },
+            { message: "Failed to like/unlike food" },
             {
                 status: 500,
                 headers: {
                     "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods":
-                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
                     "Access-Control-Allow-Headers": "*",
                 },
             },
