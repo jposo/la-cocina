@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mexicocina</string>
+    <string name="title_activity_main">Mexicocina</string>
+    <string name="package_name">com.mexicocina.app</string>
+    <string name="custom_url_scheme">com.mexicocina.app</string>
+</resources>
