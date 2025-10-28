@@ -7,6 +7,18 @@
 
     let likes = $state(data.likes);
 
+    $effect(() => {
+        const fetchLikes = async () => {
+            if ($isAuthenticated && $user?.sub) {
+                const likesResponse = await fetch(`/api/likes/${$user.sub}`);
+                likes = await likesResponse.json();
+            } else {
+                likes = {};
+            }
+        };
+        fetchLikes();
+    });
+
     function handleLike(id: string) {
         if (!$isAuthenticated) {
             alert("Please log in to like this food");
