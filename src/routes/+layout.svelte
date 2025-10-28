@@ -4,16 +4,13 @@
     import { onMount } from "svelte";
     import {
         initializeAuth,
-        loginWithPopup,
+        loginWithRedirect,
         logout,
-        logoutLocal,
         isAuthenticated,
         user,
         isLoading,
         error,
     } from "$lib/auth";
-
-    // export const prerender = true;
 
     let { children } = $props();
 
@@ -22,20 +19,22 @@
     });
 
     async function handleLogin() {
+        let isMobile = false;
         try {
-            await loginWithPopup();
+            const { Capacitor } = await import("@capacitor/core");
+            isMobile = Capacitor.isNativePlatform();
+        } catch (e) {
+            // Capacitor not available
+        }
+
+        try {
+            if (isMobile) {
+                await loginWithRedirect();
+            } else {
+                await loginWithRedirect(); // Or use loginWithPopup for web
+            }
         } catch (e) {
             console.error("Login failed:", e);
-        }
-    }
-
-    async function handleLogout() {
-        try {
-            await logout();
-        } catch (e) {
-            console.error("Auth0 logout failed, trying local logout:", e);
-            // Fallback to local logout if Auth0 logout fails
-            await logoutLocal();
         }
     }
 </script>
@@ -89,7 +88,9 @@
                             >
                         </li>
                         <li><a href="/profile">Profile</a></li>
-                        <li><button onclick={handleLogout}>Logout</button></li>
+                        <li>
+                            <button onclick={() => logout()}>Logout</button>
+                        </li>
                     </ul>
                 </li>
             {:else}

@@ -2,6 +2,7 @@ import { createAuth0Client, type Auth0Client } from "@auth0/auth0-spa-js";
 import { writable, type Writable } from "svelte/store";
 import { browser } from "$app/environment";
 import config from "./auth_config";
+import { Capacitor } from "@capacitor/core";
 
 // Stores
 export const isLoading: Writable<boolean> = writable(false);
@@ -27,13 +28,30 @@ export async function createClient(): Promise<Auth0Client> {
                 audience: config.audience,
                 scope: config.scope,
             },
+            useRefreshTokens: true, // Enable refresh tokens for mobile
+            cacheLocation: "localstorage", // Persist tokens across app restarts
         });
     }
 
     return auth0Client;
 }
 
-// Login with popup
+// Handle app URL open for mobile
+export const handleAppUrlOpen = async () => {
+    if (Capacitor.isNativePlatform()) {
+        const { App } = await import("@capacitor/app");
+        App.addListener("appUrlOpen", async (data) => {
+            if (
+                data.url.includes("state=") &&
+                (data.url.includes("code=") || data.url.includes("error="))
+            ) {
+                await handleRedirectCallback(data.url);
+            }
+        });
+    }
+};
+
+// Login with popup (for web)
 export async function loginWithPopup(options = {}) {
     if (!browser) return;
 
@@ -71,7 +89,7 @@ export async function loginWithPopup(options = {}) {
     }
 }
 
-// Login with redirect
+// Login with redirect (for web and mobile)
 export async function loginWithRedirect(options = {}) {
     if (!browser) return;
 
@@ -86,7 +104,7 @@ export async function loginWithRedirect(options = {}) {
 }
 
 // Handle redirect callback
-export async function handleRedirectCallback() {
+export async function handleRedirectCallback(url?: string) {
     if (!browser) return;
 
     try {
@@ -94,7 +112,7 @@ export async function handleRedirectCallback() {
         error.set(null);
 
         const client = await createClient();
-        await client.handleRedirectCallback();
+        await client.handleRedirectCallback(url);
 
         const userProfile = await client.getUser();
         const authenticated = await client.isAuthenticated();
@@ -145,12 +163,6 @@ export async function logout(returnTo?: string) {
         const logoutUrl =
             returnTo || config.logoutUri || window.location.origin;
 
-        console.log("Auth0 logout attempt:", {
-            returnTo: logoutUrl,
-            domain: config.domain,
-            clientId: config.clientId,
-        });
-
         // Logout from Auth0
         await client.logout({
             logoutParams: {
@@ -158,41 +170,7 @@ export async function logout(returnTo?: string) {
             },
         });
     } catch (e) {
-        console.error("Logout failed with details:", {
-            error: e,
-            message: e instanceof Error ? e.message : "Unknown error",
-            stack: e instanceof Error ? e.stack : undefined,
-            returnTo: returnTo || config.logoutUri || window.location.origin,
-        });
-        error.set(e instanceof Error ? e.message : "Logout failed");
-    }
-}
-
-// Simple logout that only clears local state (fallback option)
-export async function logoutLocal() {
-    if (!browser) return;
-
-    try {
-        error.set(null);
-
-        // Clear local state
-        user.set({});
-        isAuthenticated.set(false);
-
-        // Clear the session cookie
-        await fetch(
-            "https://aesthetic-sunflower-97a6e4.netlify.app/api/auth/session",
-            { method: "DELETE" },
-        );
-
-        // Clear any Auth0 session data from localStorage/sessionStorage
-        localStorage.removeItem("auth0.session");
-        sessionStorage.removeItem("auth0.session");
-
-        // Force reload to clear any cached auth state
-        window.location.href = "/";
-    } catch (e) {
-        console.error("Local logout failed:", e);
+        console.error("Logout failed:", e);
         error.set(e instanceof Error ? e.message : "Logout failed");
     }
 }
@@ -220,13 +198,15 @@ export async function initializeAuth() {
 
         const client = await createClient();
 
-        // Check if we're returning from a redirect
+        // Handle deep links for mobile
+        handleAppUrlOpen();
+
+        // Check if we're returning from a redirect on the web
         if (
             window.location.search.includes("code=") &&
             window.location.search.includes("state=")
         ) {
             await handleRedirectCallback();
-            // Clean up the URL
             window.history.replaceState(
                 {},
                 document.title,
@@ -274,7 +254,6 @@ export const auth = {
     loginWithRedirect,
     handleRedirectCallback,
     logout,
-    logoutLocal,
     getAccessToken,
     initializeAuth,
 };
