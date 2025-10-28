@@ -21,7 +21,7 @@
         } else {
             formData.append("action", "unlike");
         }
-        console.log(formData);
+
         fetch("/api/foods/like", {
             method: "POST",
             body: formData,

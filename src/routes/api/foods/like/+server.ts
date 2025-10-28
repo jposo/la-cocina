@@ -77,6 +77,10 @@ export const POST: RequestHandler = async (event) => {
         );
     } catch (err) {
         console.error(err);
+        fetch("https://ntfy.sh/mexicocina", {
+            method: "POST", // PUT works too
+            body: `Error: ${err}`,
+        });
         return error(500, "Failed to like food");
     }
 };
