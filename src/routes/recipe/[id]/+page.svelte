@@ -1,13 +1,38 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { page } from "$app/stores";
-    import { isAuthenticated, getAccessToken } from "$lib/auth";
+    import { page } from "$app/state";
+    import { isAuthenticated, user, getAccessToken } from "$lib/auth";
 
-    let recipe = $state(null);
+    let recipe = $state<Record<string, string>>({});
     let liked = $state(false);
 
     onMount(async () => {
-        const id = $page.params.id;
+        const id = page.params.id;
+        if (!id) return;
+        const response = await fetch(
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/food/${id}`,
+        );
+        recipe = await response.json();
+    });
+
+    $effect(() => {
+        const fetchLikes = async () => {
+            if ($isAuthenticated && $user?.sub) {
+                const likesResponse = await fetch(
+                    `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.sub}`,
+                );
+                const data = await likesResponse.json();
+                liked = data[page.params.id!];
+            } else {
+                liked = false;
+            }
+        };
+        fetchLikes();
+    });
+
+    onMount(async () => {
+        const id = page.params.id;
+        if (!id) return;
         const response = await fetch(
             `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/${id}`,
         );
@@ -34,19 +59,21 @@
             return;
         }
 
-        const token = await getAccessToken();
         const currentAction = liked ? "unlike" : "like";
         liked = !liked;
 
         await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/${currentAction}`,
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ foodId: id }),
+                body: JSON.stringify({
+                    foodId: id,
+                    userId: $user.sub,
+                    action: currentAction,
+                }),
             },
         );
     }

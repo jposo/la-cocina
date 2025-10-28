@@ -16,7 +16,6 @@
     $effect(() => {
         const fetchLikes = async () => {
             if ($isAuthenticated && $user?.sub) {
-                const token = await getAccessToken();
                 const likesResponse = await fetch(
                     `https://aesthetic-sunflower-97a6e4.netlify.app/api/likes/${$user.sub}`,
                 );
@@ -34,18 +33,21 @@
             return;
         }
 
-        const token = await getAccessToken();
         const currentAction = likes[id] ? "unlike" : "like";
         likes[id] = !likes[id];
 
         await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like/${$user.sub}`,
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ foodId: id, action: currentAction }),
+                body: JSON.stringify({
+                    foodId: id,
+                    userId: $user.sub,
+                    action: currentAction,
+                }),
             },
         );
     }

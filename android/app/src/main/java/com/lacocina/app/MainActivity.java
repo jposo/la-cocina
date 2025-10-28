@@ -1,4 +1,4 @@
-package com.mexicocina.app;
+package com.lacocina.app;
 
 import com.getcapacitor.BridgeActivity;
 
