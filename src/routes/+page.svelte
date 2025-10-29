@@ -19,21 +19,28 @@
         fetchLikes();
     });
 
-    function handleLike(id: string) {
+    async function handleLike(id: string) {
         if (!$isAuthenticated) {
             alert("Please log in to like this food");
             return;
         }
-        likes[id] = !likes[id];
 
-        fetch("/api/foods/like", {
-            method: "POST",
-            body: JSON.stringify({
-                foodId: id,
-                userId: $user.sub,
-                action: likes[id] ? "like" : "unlike",
-            }),
-        });
+        try {
+            const action = likes[id] ? "unlike" : "like";
+            likes[id] = !likes[id];
+
+            const response = await fetch(
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like?foodId=${encodeURIComponent(id)}&userId=${encodeURIComponent($user.sub)}&action=${encodeURIComponent(action)}`,
+                {
+                    method: "GET",
+                },
+            );
+            const data = await response.json();
+            if (data.message) alert(data.message);
+        } catch (error) {
+            console.error(error);
+            alert(`Failed to like/unlike food: ${error}`);
+        }
     }
 </script>
 

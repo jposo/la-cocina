@@ -6,20 +6,28 @@
 
     let liked = $state(data.liked[data.id]);
 
-    function handleLike(id: string) {
+    async function handleLike(id: string) {
         if (!$isAuthenticated) {
             alert("Please log in to like this food");
             return;
         }
-        liked = !liked;
-        fetch("/api/foods/like", {
-            method: "POST",
-            body: JSON.stringify({
-                foodId: id,
-                userId: $user.sub,
-                action: liked ? "like" : "unlike",
-            }),
-        });
+
+        try {
+            const action = liked ? "unlike" : "like";
+            liked = !liked;
+
+            const response = await fetch(
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like?foodId=${encodeURIComponent(id)}&userId=${encodeURIComponent($user.sub)}&action=${encodeURIComponent(action)}`,
+                {
+                    method: "GET",
+                },
+            );
+            const data = await response.json();
+            if (data.message) alert(data.message);
+        } catch (error) {
+            console.error(error);
+            alert(`Failed to like/unlike food: ${error}`);
+        }
     }
 </script>
 
