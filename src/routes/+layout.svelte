@@ -21,7 +21,11 @@
 
   async function handleLogin() {
     try {
-      await loginWithPopup();
+      await loginWithPopup({
+        authorizationParams: {
+          prompt: "login",
+        },
+      });
     } catch (e) {
       console.error("Login failed:", e);
     }
