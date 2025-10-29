@@ -25,18 +25,14 @@
             return;
         }
         likes[id] = !likes[id];
-        const formData = new FormData();
-        formData.append("foodId", id);
-        formData.append("userId", $user.sub);
-        if (likes[id]) {
-            formData.append("action", "like");
-        } else {
-            formData.append("action", "unlike");
-        }
 
         fetch("/api/foods/like", {
             method: "POST",
-            body: formData,
+            body: JSON.stringify({
+                foodId: id,
+                userId: $user.sub,
+                action: likes[id] ? "like" : "unlike",
+            }),
         });
     }
 </script>
