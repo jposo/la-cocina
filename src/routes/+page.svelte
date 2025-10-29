@@ -33,17 +33,14 @@
             return;
         }
 
-        const form = new FormData();
-        form.append("foodId", id);
-        form.append("userId", $user.sub);
-        form.append("action", likes[id] ? "unlike" : "like");
-
         try {
+            const action = likes[id] ? "unlike" : "like";
+            likes[id] = !likes[id];
+
             const response = await fetch(
-                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like?foodId=${encodeURIComponent(id)}&userId=${encodeURIComponent($user.sub)}&action=${encodeURIComponent(action)}`,
                 {
-                    method: "POST",
-                    body: form,
+                    method: "GET",
                 },
             );
             const data = await response.json();

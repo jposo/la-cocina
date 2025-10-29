@@ -10,7 +10,7 @@
         const id = page.params.id;
         if (!id) return;
         const response = await fetch(
-            `https://aesthetic-sunflower-97a6e4.netlify.app/api/food/${id}`,
+            `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/${id}`,
         );
         recipe = await response.json();
     });
@@ -36,19 +36,18 @@
             return;
         }
 
-        const form = new FormData();
-        form.append("foodId", id);
-        form.append("userId", $user.sub);
-        form.append("action", liked ? "unlike" : "like");
-
         try {
-            await fetch(
-                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like`,
+            const action = liked ? "unlike" : "like";
+            liked = !liked;
+
+            const response = await fetch(
+                `https://aesthetic-sunflower-97a6e4.netlify.app/api/foods/like?foodId=${encodeURIComponent(id)}&userId=${encodeURIComponent($user.sub)}&action=${encodeURIComponent(action)}`,
                 {
-                    method: "POST",
-                    body: form,
+                    method: "GET",
                 },
             );
+            const data = await response.json();
+            if (data.message) alert(data.message);
         } catch (error) {
             console.error(error);
             alert(`Failed to like/unlike food: ${error}`);
