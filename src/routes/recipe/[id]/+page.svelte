@@ -4,7 +4,7 @@
 
     let { data }: { data: PageData } = $props();
 
-    let liked = $state(data.liked[data.id]);
+    let liked = $state(data.likes[data.id]);
 
     async function handleLike(id: string) {
         if (!$isAuthenticated) {
